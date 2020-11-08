@@ -1,4 +1,6 @@
 sudo: required
+language: generic
+
 services:
   - docker
 
@@ -6,14 +8,16 @@ before_install:
   - docker build -t hawful70/react-test -f ./client/Dockerfile.dev ./client
 
 script:
-  - docker run hawful70/react-test npm test -- --coverage
+  - docker run -e CI=true hawful70/react-test npm test
 
 after_success:
   - docker build -t hawful70/multi-client ./client
   - docker build -t hawful70/multi-nginx ./nginx
   - docker build -t hawful70/multi-server ./server
   - docker build -t hawful70/multi-worker ./worker
+  # Log in to the docker CLI
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those images and push them to docker hub
   - docker push hawful70/multi-client
   - docker push hawful70/multi-nginx
   - docker push hawful70/multi-server
